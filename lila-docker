@@ -225,6 +225,8 @@ show_help() {
     echo "  gitpod public Make http port 8080 public on the Gitpod instance"
     echo "  ui            Compile the frontend code. Runs in watch mode to automatically recompile on changes"
     echo "  add-services  Add new services to the existing setup"
+    echo "  status        Show the status of all git repositories in ./repos"
+    echo "  pull          Pull the latest changes from all git repositories in ./repos"
     echo "  fast-setup    Setup opinionated services without any prompts"
 }
 
@@ -279,6 +281,12 @@ case "$@" in
         ;;
     "add-services")
         add_services
+        ;;
+    "status")
+        ./pull-all
+        ;;
+    "pull")
+        ./pull-all --pull
         ;;
     "fast-setup")
         fast_setup
