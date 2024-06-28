@@ -1,6 +1,8 @@
 #!/bin/bash -e
 
 run_setup() {
+    write_user_id_to_env
+
     rust_cmd setup
 
     docker compose build
@@ -15,12 +17,41 @@ run_setup() {
 }
 
 add_services() {
+    # COMPOSE_PROFILES=$(all_profiles) docker compose start
     rust_cmd add_services
 
     docker compose build
     docker compose up -d
     setup_bbppairings
     setup_database
+}
+
+fast_setup() {
+    if  is_gitpod_prebuild; then
+        echo "Running in Gitpod prebuilds"
+    fi
+    write_user_id_to_env
+    rust_cmd fast_setup
+
+    docker compose build
+    docker compose --profile utils build
+    docker compose up -d
+    run_ui_build --update
+
+    SETUP_DATABASE=true
+    setup_database
+    if is_gitpod_prebuild; then
+        # wait for the services to be ready sleep for 5 seconds multiple times and check 8080 port if 502 status code is returned
+        for i in {1..100}; do # 100 * 5 = 500 seconds
+            sleep 5
+            status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/)
+            echo "Status code: $status_code"
+            echo "Waited for $((i * 5)) seconds"
+            if [ "$status_code" -ne 502 ]; then
+                break
+            fi
+        done
+    fi
 }
 
 run_start() {
@@ -49,6 +80,8 @@ all_profiles() {
 }
 
 build_all_profiles() {
+    write_user_id_to_env
+
     COMPOSE_PROFILES=$(all_profiles) docker compose pull
     COMPOSE_PROFILES=$(all_profiles) docker compose build
 }
@@ -80,9 +113,14 @@ setup_database() {
         --es --es-host=elasticsearch:9200 \
         "${params[@]}"
 
-    echo "Creating database indexes..."
+    echo -n "Creating database indexes..."
     docker compose exec mongodb mongo --quiet lichess /lila/bin/mongodb/indexes.js
+    echo " done"
+
+    echo -n "Creating user trophies..."
     docker compose exec mongodb mongo --quiet lichess /lila/bin/mongodb/create-trophy-kinds.js
+    echo " done"
+
     docker compose run --rm python python /scripts/users.py
 }
 
@@ -132,16 +170,36 @@ rust_cmd() {
         cargo build --release --manifest-path command/Cargo.toml
         ./command/target/release/command "$@"
     elif [ "$(uname)" = "Darwin" ]; then
-        docker run --rm -v "$PWD/command:/command" -w /command messense/cargo-zigbuild:0.18.4 \
+        docker run --rm -v "$PWD/command:/command" -w /command messense/cargo-zigbuild:0.19.0 \
             cargo zigbuild --release --target universal2-apple-darwin
         ./command/target/universal2-apple-darwin/release/command "$@"
     else
-        docker run --rm -v "$PWD/command:/command" -w /command messense/cargo-zigbuild:0.18.4 \
+        docker run --rm -v "$PWD/command:/command" -w /command messense/cargo-zigbuild:0.19.0 \
             cargo zigbuild --release
         ./command/target/release/command "$@"
     fi
 
     load_config_to_env
+}
+
+is_gitpod() {
+    [ -n "$GITPOD_WORKSPACE_URL" ]
+}
+
+is_gitpod_prebuild() {
+    [ "$GITPOD_HEADLESS" == "true" ]
+}
+
+write_user_id_to_env() {
+    if docker info 2>/dev/null | grep -q "Operating System: Docker Desktop"; then
+        echo "Running on Docker Desktop"
+        echo "USER_ID=0" > .env
+        echo "GROUP_ID=0" >> .env
+    else
+        echo "Running on Docker Engine"
+        echo "USER_ID=$(id -u)" > .env
+        echo "GROUP_ID=$(id -g)" >> .env
+    fi
 }
 
 load_config_to_env() {
@@ -169,6 +227,7 @@ show_help() {
     echo "  add-services  Add new services to the existing setup"
     echo "  status        Show the status of all git repositories in ./repos"
     echo "  pull          Pull the latest changes from all git repositories in ./repos"
+    echo "  fast-setup    Setup opinionated services without any prompts"
 }
 
 cd "$(dirname "$0")"
@@ -228,6 +287,11 @@ case "$@" in
         ;;
     "pull")
         ./pull-all --pull
+    "fast-setup")
+        fast_setup
+        ;;
+    "setup")
+        run_setup
         ;;
     *)
         show_help
