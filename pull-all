@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 cd "$(dirname "$0")"
 initial_dir=$(pwd)
@@ -7,10 +7,7 @@ initial_dir=$(pwd)
 pull_flag=false
 if [[ $1 == "--pull" ]]; then
     pull_flag=true
-    git pull
 fi
-echo "Pull flag is $pull_flag"
-
 
 for dir in ./repos/*; do
     # echo "Checking $dir"
@@ -18,13 +15,13 @@ for dir in ./repos/*; do
         cd "$dir"
         # check if the directory is a git repo
         if [[ ! -d ".git" ]]; then
-            echo "Directory $dir is not a git repo. Skipping pull."
+            echo "Directory $dir is not a git repo."
             cd "$initial_dir"
             continue
         fi
         # check if the git repo is dirty
         if [[ $(git diff --stat) != '' ]]; then
-            echo "Repo $dir is dirty. Skipping pull."
+            echo "Repo $dir is dirty."
             cd "$initial_dir"
             continue
         fi
@@ -35,19 +32,19 @@ for dir in ./repos/*; do
         elif [[ $(git branch --list master) ]]; then
             main_or_master="master"
         else
-            echo "Repo $dir does not have a main or master branch. Skipping pull."
+            echo "Repo $dir does not have a main or master branch."
             cd "$initial_dir"
             continue
         fi
         # if repo is not on main or master branch, don't do anything
         if [[ $(git branch --show-current) != "$main_or_master" ]]; then
-            echo "Repo $dir is not on $main_or_master branch. Skipping pull."
+            echo "Repo $dir is not on $main_or_master branch."
             cd "$initial_dir"
             continue
         fi
         # check if repo is up to date
         if [[ $(git rev-list HEAD...upstream/$main_or_master --count) -eq 0 ]]; then
-            echo "Repo $dir is up to date. Skipping pull."
+            echo "Repo $dir is up to date."
             cd "$initial_dir"
             continue
         fi

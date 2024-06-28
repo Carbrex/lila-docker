@@ -224,10 +224,10 @@ case "$@" in
         add_services
         ;;
     "status")
-        bash pull-all.sh
+        ./pull-all
         ;;
     "pull")
-        bash pull-all.sh --pull
+        ./pull-all --pull
         ;;
     *)
         show_help
