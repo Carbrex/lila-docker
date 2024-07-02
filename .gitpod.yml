@@ -8,6 +8,14 @@ tasks:
   - command: |
       ./lila-docker setup
 
+additionalRepositories:
+    - url: https://github.com/lichess-org/lila
+      checkoutLocation: repos/lila
+    - url: https://github.com/lichess-org/lila-ws
+      checkoutLocation: repos/lila-ws
+    - url: https://github.com/lichess-org/lila-db-seed
+      checkoutLocation: repos/lila-db-seed
+
 ports:
   - port: 8080
     name: lichess
