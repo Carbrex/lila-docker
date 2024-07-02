@@ -27,6 +27,7 @@ add_services() {
 }
 
 fast_setup() {
+    write_user_id_to_env
     if [ ! -z "$(docker compose ps -a --services | xargs)" ]; then
         if [ ! -z "$(docker compose ps -a --services --status=exited | xargs)" ]; then
             COMPOSE_PROFILES=$(all_profiles) docker compose start
@@ -39,7 +40,6 @@ fast_setup() {
     if  is_gitpod_prebuild; then
         echo "Running in Gitpod prebuilds"
     fi
-    write_user_id_to_env
     rust_cmd fast_setup
 
     docker compose build

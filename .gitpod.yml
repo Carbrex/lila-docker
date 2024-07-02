@@ -10,11 +10,11 @@ tasks:
 
 additionalRepositories:
     - url: https://github.com/lichess-org/lila
-      checkoutLocation: 'repos/lila'
+      checkoutLocation: 'reposs/lila'
     - url: https://github.com/lichess-org/lila-ws
-      checkoutLocation: 'repos/lila-ws'
+      checkoutLocation: 'reposs/lila-ws'
     - url: https://github.com/lichess-org/lila-db-seed
-      checkoutLocation: 'repos/lila-db-seed'
+      checkoutLocation: 'reposs/lila-db-seed'
 
 ports:
   - port: 8080
