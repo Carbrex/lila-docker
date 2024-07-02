@@ -1,10 +1,12 @@
 additionalRepositories:
     - url: https://github.com/lichess-org/lila
-      checkoutLocation: 'reposs/lila'
+      checkoutLocation: lila
+
     - url: https://github.com/lichess-org/lila-ws
-      checkoutLocation: 'reposs/lila-ws'
+      checkoutLocation: lila-ws
+
     - url: https://github.com/lichess-org/lila-db-seed
-      checkoutLocation: 'reposs/lila-db-seed'
+      checkoutLocation: lila-db-seed
 
 tasks:
   - init: |
