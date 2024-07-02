@@ -7,9 +7,6 @@ additionalRepositories:
 
     - url: https://github.com/lichess/lila-db-seed
       checkoutLocation: lila-docker/repos/lila-db-seed
-    
-    - url: https://github.com/FreeUserIam/CD
-      checkoutLocation: lila-docker/CDD
 
 tasks:
   - init: |
