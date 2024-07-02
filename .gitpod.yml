@@ -5,7 +5,7 @@ additionalRepositories:
     - url: https://github.com/lichess-org/lila-ws
       checkoutLocation: lila-docker/repos/lila-ws
 
-    - url: https://github.com/lichess/lila-db-seed
+    - url: https://github.com/lichess-org/lila-db-seed
       checkoutLocation: lila-docker/repos/lila-db-seed
 
 tasks:
