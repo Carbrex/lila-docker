@@ -50,6 +50,7 @@ fast_setup() {
     SETUP_DATABASE=true
     setup_database
     if is_gitpod_prebuild; then
+        touch ran_as_gitpod_prebuild
         # wait for the services to be ready sleep for 5 seconds multiple times and check 8080 port if 502 status code is returned
         for i in {1..100}; do # 100 * 5 = 500 seconds
             sleep 5
@@ -308,6 +309,11 @@ case "$@" in
         fast_setup
         ;;
     "setup")
+        # This is a special case for Gitpod
+        if [ -f ran_as_gitpod_prebuild ]; then
+            rm ran_as_gitpod_prebuild
+            ./pull-all --pull
+        fi
         run_setup
         ;;
     *)
